@@ -1,0 +1,51 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "fa064678644f850d361930cbd30d811dde8dbcf02fb952b2db7f65fff852069b": {
+      "displayName": "ProductFetchFunction/Code",
+      "source": {
+        "path": "asset.fa064678644f850d361930cbd30d811dde8dbcf02fb952b2db7f65fff852069b",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "627010764306-us-east-1-06f27f25": {
+          "bucketName": "cdk-hnb659fds-assets-627010764306-us-east-1",
+          "objectKey": "fa064678644f850d361930cbd30d811dde8dbcf02fb952b2db7f65fff852069b.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::627010764306:role/cdk-hnb659fds-file-publishing-role-627010764306-us-east-1"
+        }
+      }
+    },
+    "5b33ebf1d67a53ede8a8010947ad695c8aec976c81f5bc8dcffd2db7242992ce": {
+      "displayName": "ProductAdminFunction/Code",
+      "source": {
+        "path": "asset.5b33ebf1d67a53ede8a8010947ad695c8aec976c81f5bc8dcffd2db7242992ce",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "627010764306-us-east-1-0843bf74": {
+          "bucketName": "cdk-hnb659fds-assets-627010764306-us-east-1",
+          "objectKey": "5b33ebf1d67a53ede8a8010947ad695c8aec976c81f5bc8dcffd2db7242992ce.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::627010764306:role/cdk-hnb659fds-file-publishing-role-627010764306-us-east-1"
+        }
+      }
+    },
+    "203899ddcffe3b6476c92ba7c8cfba0e1316428f93581de5f7ec030378962794": {
+      "displayName": "ProductsApp Template",
+      "source": {
+        "path": "ProductsApp.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "627010764306-us-east-1-f82cb447": {
+          "bucketName": "cdk-hnb659fds-assets-627010764306-us-east-1",
+          "objectKey": "203899ddcffe3b6476c92ba7c8cfba0e1316428f93581de5f7ec030378962794.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::627010764306:role/cdk-hnb659fds-file-publishing-role-627010764306-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

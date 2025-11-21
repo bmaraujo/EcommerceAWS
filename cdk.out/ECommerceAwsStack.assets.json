@@ -1,0 +1,20 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "495655deb3ea25ec268c49092f6adea30778f2408bca42800c2faf2c30bda09e": {
+      "displayName": "ECommerceAwsStack Template",
+      "source": {
+        "path": "ECommerceAwsStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-ee92fa27": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "495655deb3ea25ec268c49092f6adea30778f2408bca42800c2faf2c30bda09e.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
