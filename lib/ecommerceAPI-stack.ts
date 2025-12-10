@@ -8,6 +8,7 @@ import { HttpMethod } from "aws-cdk-lib/aws-lambda";
 interface ECommerceAPIProps extends cdk.StackProps{
     productsFetchHandler : lambdaNodeJS.NodejsFunction;
     productsAdminHandler : lambdaNodeJS.NodejsFunction;
+    ordersHandler: lambdaNodeJS.NodejsFunction;
 }
 
 export class EcommerceAPIStack extends cdk.Stack {
@@ -37,16 +38,45 @@ export class EcommerceAPIStack extends cdk.Stack {
             cloudWatchRole: true
         });
 
+        this.createProductsServices(props, api);
+        this.createOrdersServices(props,api);
+    }
+
+    private createProductsServices(props: ECommerceAPIProps, api: apigateway.RestApi) {
         const productsFetchIntegration = new apigateway.LambdaIntegration(props.productsFetchHandler);
 
         const productsResource = api.root.addResource("products");
         productsResource.addMethod(HttpMethod.GET, productsFetchIntegration);
         const productIdResource = productsResource.addResource("{id}");
-        productIdResource.addMethod(HttpMethod.GET,productsFetchIntegration);
+        productIdResource.addMethod(HttpMethod.GET, productsFetchIntegration);
 
         const productsAdminIntegration = new apigateway.LambdaIntegration(props.productsAdminHandler);
         productsResource.addMethod(HttpMethod.POST, productsAdminIntegration);
         productIdResource.addMethod(HttpMethod.PUT, productsAdminIntegration);
         productIdResource.addMethod(HttpMethod.DELETE, productsAdminIntegration);
+    }
+
+    private createOrdersServices(props: ECommerceAPIProps, api: apigateway.RestApi){
+        const ordersIntegration = new apigateway.LambdaIntegration(props.ordersHandler);
+
+        const ordersResource = api.root.addResource("orders");
+
+        ordersResource.addMethod(HttpMethod.GET, ordersIntegration);
+
+        const orderDeletionValidator = new apigateway.RequestValidator(this, 'OrderDeletionValidator',{
+            restApi:api,
+            requestValidatorName: 'OrderDeletionValidator',
+            validateRequestParameters: true
+        });
+
+        ordersResource.addMethod(HttpMethod.DELETE, ordersIntegration, {
+            requestParameters: {
+                'method.request.querystring.email': true,
+                'method.request.querystring.orderId': true
+            },
+            requestValidator : orderDeletionValidator
+        });
+
+        ordersResource.addMethod(HttpMethod.POST, ordersIntegration);
     }
 }
