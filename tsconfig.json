@@ -26,7 +26,8 @@
     ],
     "baseUrl": "./",
     "paths":{
-      "/opt/nodejs/productsLayer":["lamnda/products/layers/productsLayer/nodejs/productRepository"]
+      "/opt/nodejs/productsLayer":["lamnda/products/layers/productsLayer/nodejs/productRepository"],
+      "/opt/nodejs/productEventssLayer":["lamnda/products/layers/productEventssLayer/nodejs/productEvent"]
     }
   },
   "exclude": [
