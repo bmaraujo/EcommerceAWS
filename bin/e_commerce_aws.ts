@@ -23,7 +23,6 @@ const productsAppLayersStack = new ProductsAppLayersStack(app,"ProductsAppLayers
   env: env
 });
 
-
 const eventsDdbStack = new EventsDdbStack(app,"EventsDdb",{
   tags:tags,
   env: env
