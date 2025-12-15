@@ -1,11 +1,10 @@
-import { Table } from "aws-cdk-lib/aws-dynamodb";
-import { DBClusterStorageType } from "aws-cdk-lib/aws-rds";
+
 import {DocumentClient} from "aws-sdk/clients/dynamodb";
 import { v4 as uuid} from "uuid";
 
 export interface OrderProduct {
     code: string,
-    price: string
+    price: number
 }
 
 export interface Order {
@@ -49,6 +48,7 @@ export class OrderRepository {
     }
 
     async getAllOrders(): Promise<Order[]>{
+        console.log(`tableName: ${this.ordersDdb}`)
         const data = await this.ddbClient.scan({
             TableName: this.ordersDdb
         }).promise();
