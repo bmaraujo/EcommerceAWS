@@ -29,7 +29,8 @@
       "/opt/nodejs/productsLayer":["lamnda/products/layers/productsLayer/nodejs/productRepository"],
       "/opt/nodejs/productEventssLayer":["lamnda/products/layers/productEventssLayer/nodejs/productEvent"],
       "/opt/nodejs/ordersLayer":["lamnda/orders/layers/ordersLayer/nodejs/orderRepository"],
-      "/opt/nodejs/ordersApiLayer":["lamnda/orders/layers/ordersApiLayer/nodejs/orderApi"]
+      "/opt/nodejs/ordersApiLayer":["lamnda/orders/layers/ordersApiLayer/nodejs/orderApi"],
+      "/opt/nodejs/orderEventsLayer":["lamnda/orders/layers/orderEventsLayer/nodejs/orderEvent"]
     }
   },
   "exclude": [
