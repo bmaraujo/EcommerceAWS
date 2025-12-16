@@ -11,7 +11,7 @@ AWSXray.captureAWS(require('aws-sdk'));
 const ordersDdb = process.env.ORDERS_DDB!;
 const productsDdb = process.env.PRODUCTS_DDB!;
 
-const ddbClient = new DynamoDB.DocumentClient;
+const ddbClient = new DynamoDB.DocumentClient();
 
 const orderRepository = new OrderRepository(ddbClient, ordersDdb);
 const productRepository = new ProductRepository(ddbClient, productsDdb);
@@ -47,6 +47,7 @@ export async function handler(event:APIGatewayProxyEvent, context: Context): Pro
                 }
                 else{
                     //get all orders from an user
+                    console.log(`get all orders from an user(${email})`);
                     const orders = await orderRepository.getOrdersByEmail(email);
                     return {
                         statusCode: 200,
