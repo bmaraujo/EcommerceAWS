@@ -4,6 +4,8 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as ssm from "aws-cdk-lib/aws-ssm";
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 
 interface OrdersAppStackProps extends cdk.StackProps{
     productsDdb: dynamodb.Table
@@ -41,6 +43,11 @@ export class OrdersAppStack extends cdk.Stack {
         const productsLayerArn = ssm.StringParameter.valueForStringParameter(this,`ProductsLayerVersionArn`);
         const productsLayer = lambda.LayerVersion.fromLayerVersionArn(this,`ProductsLayerVersionArn`,productsLayerArn);
 
+        const ordersTopic = new sns.Topic(this, 'OrderEventsTopic', {
+            displayName: 'OrderEventsTopic',
+            topicName: 'order-events'
+        });
+        
         this.ordersHandler = new lambdaNodeJS.NodejsFunction(this,"OrdersFunction",{
             functionName: "OrdersFunction",
             entry: "lambda/orders/ordersFunction.ts",
@@ -55,7 +62,8 @@ export class OrdersAppStack extends cdk.Stack {
             },
             environment:{
                 PRODUCTS_DDB: props.productsDdb.tableName,
-                ORDERS_DDB: ordersDdb.tableName
+                ORDERS_DDB: ordersDdb.tableName,
+                ORDER_EVENTS_TOPIC_ARN: ordersTopic.topicArn
             },
             layers: [ordersLayer, productsLayer,orderApiLayer],
             tracing: lambda.Tracing.ACTIVE,
@@ -64,7 +72,7 @@ export class OrdersAppStack extends cdk.Stack {
 
         ordersDdb.grantReadWriteData(this.ordersHandler);
         props.productsDdb.grantReadData(this.ordersHandler);
-
+        ordersTopic.grantPublish(this.ordersHandler);
         
     }
 }
