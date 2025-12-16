@@ -51,8 +51,10 @@ export class EcommerceAPIStack extends cdk.Stack {
         productIdResource.addMethod(HttpMethod.GET, productsFetchIntegration);
 
         const productsAdminIntegration = new apigateway.LambdaIntegration(props.productsAdminHandler);
-        productsResource.addMethod(HttpMethod.POST, productsAdminIntegration);
-        productIdResource.addMethod(HttpMethod.PUT, productsAdminIntegration);
+        const productRequestValidator = this.createProductValidator(api);
+
+        productsResource.addMethod(HttpMethod.POST, productsAdminIntegration, productRequestValidator);
+        productIdResource.addMethod(HttpMethod.PUT, productsAdminIntegration, productRequestValidator);
         productIdResource.addMethod(HttpMethod.DELETE, productsAdminIntegration);
     }
 
@@ -76,7 +78,82 @@ export class EcommerceAPIStack extends cdk.Stack {
             },
             requestValidator : orderDeletionValidator
         });
+        const orderRequestValidator = new apigateway.RequestValidator(this,"OrderRequestValidator", {
+            restApi: api,
+            requestValidatorName: "Order request validator",
+            validateRequestBody: true
+        });
+        const orderModel = new apigateway.Model(this, "OrderModel",{
+            modelName: "OrderModel",
+            restApi: api,
+            schema: {
+                type: apigateway.JsonSchemaType.OBJECT,
+                properties: {
+                    email: {
+                        type: apigateway.JsonSchemaType.STRING
+                    },
+                    productIds: {
+                        type: apigateway.JsonSchemaType.ARRAY,
+                        minItems: 1,
+                        items: {
+                            type: apigateway.JsonSchemaType.STRING
+                        }
+                    },
+                    payment: {
+                        type: apigateway.JsonSchemaType.STRING,
+                        enum: ["CASH","DEBIT_CARD","CREDIT_CARD"]
+                    }
+                },
+                required: ["email","productIds","payment"]
+            }
+        });
+        ordersResource.addMethod(HttpMethod.POST, ordersIntegration, {
+            requestValidator: orderRequestValidator,
+            requestModels: {
+                "application/json":orderModel
+            }
+        });
+    }
 
-        ordersResource.addMethod(HttpMethod.POST, ordersIntegration);
+    private createProductValidator(api: apigateway.RestApi): apigateway.MethodOptions{
+        const productRequestValidator = new apigateway.RequestValidator(this,"ProductRequestValidator", {
+            restApi: api,
+            requestValidatorName: "Product request validator",
+            validateRequestBody: true
+        });
+
+        const productModel = new apigateway.Model(this, "ProductModel",{
+            modelName: "ProductModel",
+            restApi: api,
+            contentType: "application/json",
+            schema: {
+                type: apigateway.JsonSchemaType.OBJECT,
+                properties: {
+                    productName: {
+                        type: apigateway.JsonSchemaType.STRING
+                    },
+                    code: {
+                        type: apigateway.JsonSchemaType.STRING
+                    },
+                    price: {
+                        type: apigateway.JsonSchemaType.NUMBER
+                    },
+                    model: {
+                        type: apigateway.JsonSchemaType.STRING
+                    },
+                    productUrl: {
+                        type: apigateway.JsonSchemaType.STRING
+                    }
+                },
+                required: ["productName","code"]
+            }
+        });
+
+        return {
+            requestValidator: productRequestValidator,
+            requestModels: {
+                "application/json":productModel
+            }
+        }
     }
 }
