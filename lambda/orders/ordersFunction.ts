@@ -73,9 +73,12 @@ export async function handler(event:APIGatewayProxyEvent, context: Context): Pro
     }
     else if(method == HttpMethod.POST){
         const orderRequest = JSON.parse(event.body!) as OrderRequest;
-        const products = await productRepository.getProductsByIds(orderRequest.productsIds);
-        if(products.length === orderRequest.productsIds.length){
+        console.log(`Order request: ${JSON.stringify(orderRequest)}`);
+        const products = await productRepository.getProductsByIds(orderRequest.productIds);
+        console.log(`Products: ${JSON.stringify(products)}`);
+        if(products.length === orderRequest.productIds.length){
             const order = buildOrder(orderRequest, products);
+            console.log(`Order: ${JSON.stringify(order)}`);
             const orderCreated = await orderRepository.createOrder(order);
 
             return {
