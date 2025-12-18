@@ -8,7 +8,8 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 
 interface OrdersAppStackProps extends cdk.StackProps{
-    productsDdb: dynamodb.Table
+    productsDdb: dynamodb.Table,
+    eventsDdb: dynamodb.Table
 }
 
 export class OrdersAppStack extends cdk.Stack {
@@ -77,5 +78,25 @@ export class OrdersAppStack extends cdk.Stack {
         props.productsDdb.grantReadData(this.ordersHandler);
         ordersTopic.grantPublish(this.ordersHandler);
         
+        const orderEventsHandler = new lambdaNodeJS.NodejsFunction(this,"OrderEventsFunction",{
+            functionName: "OrderEventsFunction",
+            entry: "lambda/orders/orderEventsFunction.ts",
+            handler:"handler",
+            memorySize: 512,
+            runtime: lambda.Runtime.NODEJS_22_X,
+            timeout: cdk.Duration.seconds(5),
+            bundling:{
+                minify: true,
+                sourceMap: false,
+            },
+            environment:{
+                EVENTS_DDB: props.eventsDdb.tableName
+            },
+            layers: [orderEventsLayer],
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_404_0
+        });
+        ordersTopic.addSubscription(new subs.LambdaSubscription(orderEventsHandler));
     }
+
 }
