@@ -4,6 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as ssm from "aws-cdk-lib/aws-ssm";
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 interface ProductsAppsStackProps extends cdk.StackProps{
     eventsDdb: dynamodb.Table
@@ -58,7 +59,18 @@ export class ProductsAppStack extends cdk.Stack {
             tracing: lambda.Tracing.ACTIVE,
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_404_0
         });
-        props.eventsDdb.grantWriteData(productEventsHandler);
+        const eventsDdbPolicy = new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ["dynamodb:PutItem"],
+            resources: [props.eventsDdb.tableArn],
+            conditions: {
+                ['ForAllValues:StringLike']: {
+                    'dynamodb:LeadingKeys': ['#product_*']
+                }
+            }
+        });
+
+        productEventsHandler.addToRolePolicy(eventsDdbPolicy);
 
         this.productFetchHanlder = new lambdaNodeJS.NodejsFunction(this,"ProductFetchFunction",{
             functionName: "ProductFetchFunction",
