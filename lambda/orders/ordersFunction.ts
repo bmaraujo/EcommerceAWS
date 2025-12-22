@@ -6,6 +6,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { HttpMethod } from 'aws-cdk-lib/aws-events';
 import { CarrierType, OrderProductResponse, OrderRequest, OrderResponse, PaymentType, ShippingType } from './layers/ordersApiLayer/nodejs/orderApi';
 import { OrderEvent, OrderEventType, Envelope} from './layers/orderEventsLayer/nodejs/orderEvent';
+import { v4 as uuid} from "uuid";
 
 AWSXray.captureAWS(require('aws-sdk'));
 
@@ -83,14 +84,15 @@ export async function handler(event:APIGatewayProxyEvent, context: Context): Pro
         if(products.length === orderRequest.productIds.length){
             const order = buildOrder(orderRequest, products);
             console.log(`Order: ${JSON.stringify(order)}`);
-            const orderCreated = await orderRepository.createOrder(order);
+            const orderCreatedPromise = orderRepository.createOrder(order);
+            const eventResultPromise = sendOrderEvent(order, OrderEventType.CREATED, lambdaRequestId);
+            const results = await Promise.all([orderCreatedPromise,eventResultPromise]);
 
-            const eventResult = await sendOrderEvent(orderCreated, OrderEventType.CREATED, lambdaRequestId);
-            console.log(`Order create event sent - orderId: ${orderCreated.sk} - MessageId: ${eventResult.MessageId}`);
+            console.log(`Order create event sent - orderId: ${order.sk} - MessageId: ${results[1].MessageId}`);
 
             return {
                 statusCode: 201,
-                body: JSON.stringify(convertToOrderResponse(orderCreated))
+                body: JSON.stringify(convertToOrderResponse(order))
             }
         }
         else{
@@ -142,6 +144,8 @@ function buildOrder(orderRequest: OrderRequest, products: Product[]) : Order {
     });
 
     const order: Order = {
+        sk: uuid(),
+        createdAt: Date.now(),
         pk: orderRequest.email,
         billing : {
             payment: orderRequest.payment,
@@ -202,6 +206,7 @@ function sendOrderEvent(order: Order, eventType: OrderEventType, lambdaRequestId
         eventType: eventType,
         data: JSON.stringify(orderEvent)
     };
+    console.log(`TopicArn: ${orderEventsTopicArn}, Envelope: "${envelope}`);
     return snsClient.publish({
         TopicArn: orderEventsTopicArn,
         Message: JSON.stringify(envelope)

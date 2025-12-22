@@ -22,7 +22,7 @@ export async function handler(event: SNSEvent, context: Context) : Promise<void>
     return;    
 }
 
-function createEvent(body: SNSMessage){
+function createEvent(body: SNSMessage): Promise<PromiseResult<DynamoDB.DocumentClient.PutItemOutput, AWSError>>{
     const envelope = JSON.parse(body.Message) as Envelope;
     const event = JSON.parse(envelope.data) as OrderEvent;
 
