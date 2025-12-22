@@ -92,6 +92,7 @@ export class OrdersAppStack extends cdk.Stack {
             bundling:{
                 minify: true,
                 sourceMap: false,
+                nodeModules: ['@smithy/service-error-classification']
             },
             environment:{
                 EVENTS_DDB: props.eventsDdb.tableName
