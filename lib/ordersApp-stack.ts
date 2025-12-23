@@ -143,10 +143,43 @@ export class OrdersAppStack extends cdk.Stack {
         }));
 
         const orderEventsQueue = new sqs.Queue(this, "OrderEventsQueue", {
-            queueName: 'order-events'
+            queueName: 'order-events',
+            enforceSSL: false,
+            encryption: sqs.QueueEncryption.UNENCRYPTED
         });
 
-        ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue));
+        ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue,{
+            filterPolicy: {
+                eventType: sns.SubscriptionFilter.stringFilter({
+                    allowlist: [OrderEventType.CREATED]
+                })
+            }
+        }));
+
+        const orderEmailsHandler = new lambdaNodeJS.NodejsFunction(this,"OrderEmailsFunction",{
+            functionName: "OrderEmailsFunction",
+            entry: "lambda/orders/orderEmailsFunction.ts",
+            handler:"handler",
+            memorySize: 512,
+            runtime: lambda.Runtime.NODEJS_22_X,
+            timeout: cdk.Duration.seconds(5),
+            bundling:{
+                minify: true,
+                sourceMap: false,
+                nodeModules: ['aws-xray-sdk-core']
+            },
+            layers: [orderEventsLayer],
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_404_0
+        });
+
+        orderEmailsHandler.addEventSource(new lambdaEventSrouoce.SqsEventSource(orderEventsQueue, {
+            batchSize: 5,
+            enabled: true,
+            maxBatchingWindow: cdk.Duration.minutes(1)
+        }));
+        orderEventsQueue.grantConsumeMessages(orderEmailsHandler);
+
     }
 
 }
