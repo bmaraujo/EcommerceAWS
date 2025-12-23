@@ -8,6 +8,8 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { OrderEventType } from "../lambda/orders/layers/orderEventsLayer/nodejs/orderEvent";
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as lambdaEventSrouoce from 'aws-cdk-lib/aws-lambda-event-sources';
 
 interface OrdersAppStackProps extends cdk.StackProps{
     productsDdb: dynamodb.Table,
@@ -139,6 +141,12 @@ export class OrdersAppStack extends cdk.Stack {
                 })
             }
         }));
+
+        const orderEventsQueue = new sqs.Queue(this, "OrderEventsQueue", {
+            queueName: 'order-events'
+        });
+
+        ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue));
     }
 
 }
