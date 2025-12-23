@@ -7,6 +7,7 @@ import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { OrderEventType } from "../lambda/orders/layers/orderEventsLayer/nodejs/orderEvent";
 
 interface OrdersAppStackProps extends cdk.StackProps{
     productsDdb: dynamodb.Table,
@@ -115,6 +116,29 @@ export class OrdersAppStack extends cdk.Stack {
         });
 
         orderEventsHandler.addToRolePolicy(eventsDdbPolicy);
+
+        const billingHandler = new lambdaNodeJS.NodejsFunction(this,"BillingFunction",{
+            functionName: "BillingFunction",
+            entry: "lambda/orders/billingFunction.ts",
+            handler:"handler",
+            memorySize: 512,
+            runtime: lambda.Runtime.NODEJS_22_X,
+            timeout: cdk.Duration.seconds(5),
+            bundling:{
+                minify: true,
+                sourceMap: false
+            },
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_404_0
+        });
+
+        ordersTopic.addSubscription(new subs.LambdaSubscription(billingHandler,{
+            filterPolicy: {
+                eventType: sns.SubscriptionFilter.stringFilter({
+                    allowlist: [OrderEventType.CREATED]
+                })
+            }
+        }));
     }
 
 }

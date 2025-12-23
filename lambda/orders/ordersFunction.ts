@@ -209,6 +209,12 @@ function sendOrderEvent(order: Order, eventType: OrderEventType, lambdaRequestId
     console.log(`TopicArn: ${orderEventsTopicArn}, Envelope: "${envelope}`);
     return snsClient.publish({
         TopicArn: orderEventsTopicArn,
-        Message: JSON.stringify(envelope)
+        Message: JSON.stringify(envelope),
+        MessageAttributes:{
+            eventType: {
+                DataType: 'String',
+                StringValue: eventType
+            }
+        }
     }).promise();
 }
